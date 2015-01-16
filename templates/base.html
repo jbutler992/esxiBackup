@@ -1,0 +1,65 @@
+<html>
+    <center>
+    <head>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script>
+            function update(){
+                jQuery.ajaxSetup({async:false});
+                var processes = [];
+                var processString = "";
+                var i = 0;
+                jQuery.post("/getRunning", function(data) {processes=data.running});
+                for(i = 0; i < processes.length; i++){
+                    processString += "</br>"
+                    processString += processes[i];
+                }
+                document.getElementById("running").innerHTML = processString;
+            }
+            setInterval(update, 10000)
+            
+            function getVMs(){
+                jQuery.ajaxSetup({async:false});
+                var names = [];
+                var i = 0;
+                var list = document.getElementById("MachineName");
+                jQuery.post("/getVMs", function(data) {names=data.mnames});
+                for(i = 0; i < names.length; i++){
+                    var option = document.createElement("option");
+                    option.text = names[i];
+                    list.add(option, list[i+1]);
+                }
+            }
+            function backup(machine){
+                jQuery.ajaxSetup({async:false});
+                var machineName = "";
+                if(machine == 1)
+                    machineName = "SSD-Automation"
+                if(machine == 2)
+                    machineName = "SSD-HS"
+                if(machine == 3)
+                    machineName = "SSD-Main"
+                jQuery.post("/backup", {name:machineName})
+            }
+            function schedule(){
+                jQuery.ajaxSetup({async:false});
+                date = document.getElementById("date").value;
+                time = document.getElementById("time").value;
+                var names = document.getElementById("MachineName");
+                var mName = names.options[names.selectedIndex].innerHTML;
+                jQuery.post("/schedule", {schName:mName, schDate:date, schTime:time})
+            }
+        </script>
+    </head>
+    <title>Backup Controller</title>
+    <body onload="update(), getVMs()">
+        Running Tasks:</br>
+        <div id="running"></div>
+        </br>Schedule a backup</br>
+        Machine Name: <select name="MachineName" id="MachineName">
+            <option value="default">Machine Name</option></select></br>
+        Date: <input type="date" name="date" id="date"></br>
+        Time: <input type="time" name="time" id="time"></br>
+        <input type="button" onclick="schedule()" value="Submit">
+    </body>
+    </center>
+</html>
